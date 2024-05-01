@@ -2,9 +2,9 @@ import User from '../model/userModel.js';
 import asyncHandler from 'express-async-handler';
 import generateToken from '../utils/generateToken.js';
 
-// register new User
+// @desc Register new User
 // @route POST api/user/
-// privacy Public
+// @privacy Public
 const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   if (!firstName || !lastName || !email || !password) {
@@ -54,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Authenticate Users
 // @route POST api/user/auth
-// privacy Public
+// @privacy Public
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -70,6 +70,7 @@ const authUser = asyncHandler(async (req, res) => {
     res.status(200);
     generateToken(res, user._id);
     res.json({
+      _id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -80,9 +81,9 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Updates Logout User
-// @route POST api/users/profile/:id
-// privacy Private
+// @desc  Logout User
+// @route POST api/users/logout
+// @privacy Public
 const logoutUser = asyncHandler(async (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
@@ -93,37 +94,34 @@ const logoutUser = asyncHandler(async (req, res) => {
   res.json({ message: 'Logged out user' });
 });
 
-
-// Updates User details
-// @route PUT api/users/profile/:id
-// privacy Private
-const getUserProfile = asyncHandler (async (req, res) => {
-  const user = await User.findById(req.user)
+// @desc Get User ProfileInfo
+// @route Get api/users/profile
+// @privacy Private
+const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user);
   if (user) {
-    res.status(200)
+    res.status(200);
     res.json({
       firstName: user.firstName,
       lastName: user.lastName,
-      email: user.email
-    })
+      email: user.email,
+    });
   } else {
-    res.status(404)
-    throw new Error('User not found')
+    res.status(404);
+    throw new Error('User not found');
   }
-})
+});
 
-
-
-// Updates User details
-// @route PUT api/users/profile/:id
-// privacy Private
+// @desc Updates User profile
+// @route PUT api/users/profile/
+// @privacy Private
 const updateUser = asyncHandler(async (req, res) => {
   const { firstName, lastName } = req.body;
   const user = await User.findById(req.user._id);
 
   if (user) {
-    user.firstName = req.body.firstName || user.firstName;
-    user.lastName = req.body.lastName || user.lastName;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
 
     const updatedUser = await user.save();
     res.status(200);
@@ -138,9 +136,9 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Delete User Account
+// @desc Delete User Account
 // @route POST api/users/profile/:id
-// privacy Private
+// @privacy Private
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndDelete(req.user._id);
   if (user) {
@@ -152,4 +150,11 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, getUserProfile, authUser, logoutUser, updateUser, deleteUser };
+export {
+  registerUser,
+  getUserProfile,
+  authUser,
+  logoutUser,
+  updateUser,
+  deleteUser,
+};
